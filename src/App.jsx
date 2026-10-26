@@ -1,3 +1,4 @@
+import { useState } from "react";
 // ============================================================
 // APP.JSX — The Root Component (Day 2)
 // ============================================================
@@ -30,7 +31,15 @@
 
 /* --- YOUR IMPORTS GO HERE --- */
 import HeroSection from "./components/HeroSection";
-
+import FooterSection from "./components/FooterSection";
+import NavBar from "./components/NavBar";
+import RibbonTicker from "./components/RibbonTicker";
+import FeaturesSection from "./components/FeaturesSection";
+import ProductShowcase from "./components/ProductShowcase";
+import AboutSection from "./components/AboutSection";
+import CtaSection from "./components/CtaSection";
+import ContactSection from "./components/ContactSection";
+import CartDrawer from "./components/CartDrawer";
 // STEP 2: Create and export the App component
 // Use: export default function App() { ... }
 //
@@ -57,11 +66,56 @@ import HeroSection from "./components/HeroSection";
 
 //
 export default function App(){
+    const [cartItems, setCartItems] = useState([]);
+    const [cartOpen, setCartOpen] = useState(false);
+
+    const addToCart = (product) => {
+        setCartItems((currentItems) => {
+            const existingItem = currentItems.find((item) => item.name === product.name);
+
+            if (existingItem) {
+                return currentItems.map((item) =>
+                    item.name === product.name
+                        ? { ...item, quantity: item.quantity + 1 }
+                        : item
+                );
+            }
+
+            return [...currentItems, { ...product, quantity: 1 }];
+        });
+    };
+
+    const updateCartQuantity = (productName, quantity) => {
+        setCartItems((currentItems) =>
+            quantity > 0
+                ? currentItems.map((item) =>
+                    item.name === productName ? { ...item, quantity } : item
+                )
+                : currentItems.filter((item) => item.name !== productName)
+        );
+    };
+
+    const removeFromCart = (productName) => {
+        setCartItems((currentItems) =>
+            currentItems.filter((item) => item.name !== productName)
+        );
+    };
+
     //
     return (
         //flskdfsdfsfdsdkfs dfsdlfjsf
         <div className="app">
-
+            <NavBar
+                cartCount={cartItems.reduce((count, item) => count + item.quantity, 0)}
+                onOpenCart={() => setCartOpen(true)}
+            />
+            <CartDrawer
+                isOpen={cartOpen}
+                items={cartItems}
+                onClose={() => setCartOpen(false)}
+                onRemove={removeFromCart}
+                onUpdateQuantity={updateCartQuantity}
+            />
             
            <section className="hero bg-hero">
                 <div className="hero-grid">
@@ -69,15 +123,16 @@ export default function App(){
                 </div>
            </section>
 
+            <RibbonTicker />
 
            {/* Features / Carousel */}
            <section className="features bg-features" id="shop">
-
+            <FeaturesSection />d
            </section>
 
            {/* Product showcase */}
            <section className="bg-cta">
-
+            <ProductShowcase onAddToCart={addToCart} />
 
            </section>
 
@@ -85,26 +140,26 @@ export default function App(){
 
            {/* CTA */}
            <section className="bg-cta">
-
+            <CtaSection/>
 
            </section>
 
            {/* About */}
-
+        
            <section className="bg-cta" id="about">
-
+                <AboutSection/>
            </section>
 
 
            {/* contact */}
 
            <section className="bg-cta" id="contact">
-
+            <ContactSection />
            </section>
 
            {/* footer */}
            <section className="bg-footer">
-            
+            <FooterSection/>
            </section>
            
            

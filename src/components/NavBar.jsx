@@ -29,7 +29,12 @@
 // Import the Button UI component from "./ui/Button"
 
 /* --- YOUR IMPORTS GO HERE --- */
-
+import {useState, useEffect} from "react";
+// AnimatePresence lets an element animite out before react removes it
+import {motion, AnimatePresence} from "framer-motion";
+import { ShoppingBag } from "lucide-react";
+import logo from "../assets/Beans_logo.png";
+import Button from "./ui/Button";
 
 // STEP 2: Create and export the NavBar component
 // export default function NavBar() { ... }
@@ -82,3 +87,143 @@
 //   Inside: nav links + Button, each calling closeMenu onClick
 
 /* --- YOUR COMPONENT CODE GOES HERE --- */
+
+export default function NavBar({ cartCount = 0, onOpenCart }){
+    //Hooks to be uptop
+    //is the mobile drop-down open?
+    const [menuOpen,setMenuOpen] = useState(false);
+    //Has the user scrolled?  Adds a background/shadow once off the very top
+    const [scrolled, setScrolled] = useState(false);
+    //anytime type of objects or values you need
+
+
+    // create a function expression
+    const closeMenu = () => setMenuOpen(false);
+
+
+    //useEffect --> the use scrolling
+
+    useEffect(() => {
+        //true once were more than 20px down the page
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+
+        //promises --> waiting for information
+        window.addEventListener("scroll", handleScroll, {passive: true});
+        //cleanup on unmount so no dead listener is left behind
+        return () => window.removeEventListener("scroll", handleScroll)
+    },[]);
+
+    //return ()
+
+
+    return (
+        <motion.header
+            //ternary adds "navbar-scrolled" only once scrolled
+            className={`navbar ${scrolled ? "navbar-scrolled" : ""}`}
+            initial={{y: -80, opacity: 0}}
+            animate={{y: 0, opacity: 1}}
+            transition={{duration: 0.5, ease: [0.25,0.46, 0.45, 0.94]}}
+        >
+            <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 md:px-8">
+                <a href="#home" className="brand">
+                    <img src={logo} alt="Beans Place Logo" className="logo h-12 w-auto md:h-14"/>
+                </a>
+
+                {/* desktop nav - hidden on phones */}
+                <nav className="nav-links hidden items-center gap-10 md:flex">
+                    <a href="#home">Home</a>
+                    <a href="#shop">Shop Coffee</a>
+                    <a href="#about">Our Story</a>
+                    <a href="#contact">Contact</a>
+                </nav>
+
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        aria-label={`Open cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}`}
+                        onClick={onOpenCart}
+                        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[var(--brown-700)] transition-colors hover:bg-[var(--brown-700)]/10"
+                    >
+                        <ShoppingBag size={21} aria-hidden="true" />
+                        {cartCount > 0 && (
+                            <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-[var(--amber)] px-1 text-xs font-bold text-[var(--brown-900)]">
+                                {cartCount}
+                            </span>
+                        )}
+                    </button>
+
+                    {/* desktop cta */}
+                    <Button variant="accent" size="sm" className="hidden md:inline-flex">
+                        Order Now ☕
+                    </Button>
+                </div>
+
+                {/* mobile hamburger - md: hidden means phones only */}
+                <button
+                    type="button"
+                    aria-label={menuOpen ? "Close menu" : "Open menu"}
+                    aria-expanded={menuOpen}
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="relative z-50 flex h-10 w-10 flex-col items-center justify-center gap-1.5 md:hidden"
+                >
+                    <span 
+                        className={`block h-0.5 w-6 bg-black transition-all duration-300
+                            ${menuOpen ? "translate-y-2 rotate-45" : ""}
+                            `}
+                    />
+                    <span 
+                        className={`block h-0.5 w-6 bg-black transition-all duration-300
+                            ${menuOpen ? "opacity-0" : "opacity-100"}
+                            `}
+                    />
+                    <span 
+                        className={`block h-0.5 w-6 bg-black transition-all duration-300
+                            ${menuOpen ? "-translate-y-2 -rotate-45" : ""}
+                            `}
+                    />
+                </button>
+            </div>
+
+
+            {/* mobile menu 
+                animatePresence is what lets the closing animation play
+            */}
+            <AnimatePresence>
+                {menuOpen && (
+                    <motion.div
+                        className="overflow-hidden md:hidden"
+                        initial={{height: 0, opacity: 0}}
+                        animate={{height: "auto", opacity: 1}}
+                        exit={{height: 0, opacity: 0}}
+                        transition={{duration: 0.3, ease: "easeInOut"}}
+                    >
+                        {/* every link also closes the panel via closeMenu */}
+                        <nav className= "flex flex-col gap-4 px-6 pb-6 pt-2">
+                            <a href="#home" onClick={closeMenu} className="text-base font-semibold">
+                                Home
+                            </a>
+                            <a href="#shop" onClick={closeMenu} className="text-base font-semibold">
+                                Shop Coffee
+                            </a>
+                            <a href="#about" onClick={closeMenu} className="text-base font-semibold">
+                                Our Story
+                            </a>
+                            <a href="#contact" onClick={closeMenu} className="text-base font-semibold">
+                                Contact
+                            </a>
+
+                            <Button
+                                variant="accent"
+                                size="sm"
+                                className="mt-2 w-full"
+                                onClick={closeMenu}
+                            >
+                                Order Now ☕
+                            </Button>
+                        </nav>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.header>
+    );
+}
